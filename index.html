@@ -57,12 +57,17 @@
             max-width: 100%;
             height: auto;
         }
+        .counter {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Page Admin - Partager des fichiers</h1>
+    <p class="counter">Nombre de posts : <span id="postCounter">0</span></p>
     <input type="text" id="title" placeholder="Titre du post">
     <textarea id="content" placeholder="Contenu du post (texte, description, etc.)"></textarea>
     <input type="file" id="fileInput" accept="image/*,video/*">
@@ -82,6 +87,12 @@
         localStorage.setItem('posts', JSON.stringify(posts));
     }
 
+    function updateCounter() {
+        const counter = document.getElementById('postCounter');
+        const posts = getPosts();
+        counter.textContent = posts.length;
+    }
+
     function renderPosts() {
         const posts = getPosts();
         const postsContainer = document.getElementById('adminPosts');
@@ -96,6 +107,7 @@
                 </div>
             `;
         });
+        updateCounter(); // Mettre à jour le compteur après affichage
     }
 
     function addPost() {
@@ -134,10 +146,12 @@
         let posts = getPosts();
         posts.splice(index, 1);
         savePosts(posts);
-        renderPosts();
+        renderPosts(); // Réaffiche les posts restants
     }
 
-    window.onload = renderPosts;
+    window.onload = function() {
+        renderPosts();
+    };
 </script>
 
 </body>
