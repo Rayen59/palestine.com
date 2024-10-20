@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Partager des fichiers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #16a085;
+        }
+        .posts {
+            margin-top: 20px;
+        }
+        .post {
+            background-color: #1e1e1e;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            position: relative;
+        }
+        .delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: red;
+        }
+        img, video {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Page Admin - Partager des fichiers</h1>
+    <input type="text" id="title" placeholder="Titre du post">
+    <textarea id="content" placeholder="Contenu du post (texte, description, etc.)"></textarea>
+    <input type="file" id="fileInput" accept="image/*,video/*">
+    <button onclick="addPost()">Partager</button>
+
+    <div class="posts" id="adminPosts">
+        <!-- Les posts s'afficheront ici -->
+    </div>
+</div>
+
+<script>
+    function getPosts() {
+        return JSON.parse(localStorage.getItem('posts')) || [];
+    }
+
+    function savePosts(posts) {
+        localStorage.setItem('posts', JSON.stringify(posts));
+    }
+
+    function renderPosts() {
+        const posts = getPosts();
+        const postsContainer = document.getElementById('adminPosts');
+        postsContainer.innerHTML = '';
+        posts.forEach((post, index) => {
+            postsContainer.innerHTML += `
+                <div class="post" id="post-${index}">
+                    <h3>${post.title}</h3>
+                    <p>${post.content}</p>
+                    ${post.fileUrl ? (post.fileType.startsWith('image') ? `<img src="${post.fileUrl}" alt="Image">` : `<video src="${post.fileUrl}" controls></video>`) : ''}
+                    <span class="delete" onclick="deletePost(${index})">Supprimer</span>
+                </div>
+            `;
+        });
+    }
+
+    function addPost() {
+        const title = document.getElementById('title').value;
+        const content = document.getElementById('content').value;
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (title && content) {
+            const posts = getPosts();
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    posts.push({
+                        title,
+                        content,
+                        fileUrl: e.target.result,
+                        fileType: file.type
+                    });
+                    savePosts(posts);
+                    renderPosts();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                posts.push({ title, content });
+                savePosts(posts);
+                renderPosts();
+            }
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            document.getElementById('fileInput').value = '';
+        }
+    }
+
+    function deletePost(index) {
+        let posts = getPosts();
+        posts.splice(index, 1);
+        savePosts(posts);
+        renderPosts();
+    }
+
+    window.onload = renderPosts;
+</script>
+
+</body>
+</html>
